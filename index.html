@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title id="docTitle">Veyzen Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<div class="cam-active" id="camInd"></div>
+<div id="blkSc"><div class="blk-ic">🔒</div><div class="blk-t">Perangkat Diblokir</div><div class="blk-s">Terlalu banyak percobaan login gagal. Hubungi administrator.</div><div class="blk-id" id="blkId"></div></div>
+<div id="profileModal" style="display:none;position:fixed;inset:0;z-index:8400;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);align-items:center;justify-content:center">
+  <div style="background:var(--surf);border:1px solid var(--bdr2);border-radius:20px;padding:24px;width:92%;max-width:360px;box-sizing:border-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 style="font-family:var(--fd);font-size:16px;font-weight:700;margin:0">Profil Saya</h3>
+      <button onclick="document.getElementById('profileModal').style.display='none'" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div style="text-align:center;margin-bottom:18px">
+      <div id="profAvBig" style="width:72px;height:72px;border-radius:50%;background:var(--dv);margin:0 auto 10px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;cursor:pointer" onclick="document.getElementById('profPicIn').click()"></div>
+      <input type="file" id="profPicIn" accept="image/*" hidden>
+      <div style="font-size:11.5px;color:var(--text3)">Ketuk foto untuk ganti</div>
+      <div id="premBadgeProf" style="display:none;margin-top:6px"><span style="background:linear-gradient(135deg,#b45309,#d97706);color:#fff;padding:3px 12px;border-radius:99px;font-size:11px;font-weight:700">⭐ Premium</span></div>
+    </div>
+    <input class="lm-inp" id="profName" placeholder="Nama tampilan" style="margin-bottom:8px;width:100%">
+    <input class="lm-inp" id="profEmail" placeholder="Email" type="email" style="margin-bottom:8px;width:100%">
+    <input class="lm-inp" id="profAge" placeholder="Umur" type="number" min="1" max="120" style="margin-bottom:14px;width:100%">
+    <button onclick="saveProfile()" style="width:100%;padding:11px;border:none;border-radius:12px;background:var(--dv);color:#fff;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer">Simpan Profil</button>
+  </div>
+</div>
+
+
+<div id="imgLightbox" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box">
+  <button id="lbCloseBtn" style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;z-index:2">
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;pointer-events:none" fill="none" stroke="#fff" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <img id="lbImg" src="" style="max-width:100%;max-height:78vh;border-radius:12px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)">
+  <button id="lbDownloadBtn" style="margin-top:18px;display:flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:99px;background:var(--dv);color:#fff;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;touch-action:manipulation">
+    <svg viewBox="0 0 24 24" style="width:15px;height:15px;pointer-events:none" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Unduh Gambar
+  </button>
+</div>
+<div id="modeSheetOv" style="display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.55);opacity:0"></div>
+<div id="modeSheet" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:851;background:var(--surf);border-radius:20px 20px 0 0;border:1px solid var(--bdr2);border-bottom:none;max-width:480px;margin:0 auto;box-shadow:0 -8px 40px rgba(0,0,0,.5);overflow:hidden;transform:translateY(100%)">
+  <div style="width:36px;height:4px;background:var(--bdr2);border-radius:99px;margin:10px auto 4px"></div>
+  <div id="modeSheetPrem" style="margin:10px 14px 12px;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,#1E3566,#16294F);display:flex;align-items:center;gap:12px;cursor:pointer">
+    <div style="width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:19px;height:19px" fill="none" stroke="#fff" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+    <div style="flex:1;min-width:0">
+      <div style="color:#fff;font-weight:700;font-size:14px">Upgrade Premium</div>
+      <div style="color:#c7c2f5;font-size:11.5px;margin-top:1px">Akses kecerdasan tanpa batas</div>
+    </div>
+    <div style="background:#fff;color:#1E3566;font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;flex-shrink:0">Lihat</div>
+  </div>
+  <div id="modeSheetList" style="padding:2px 8px 14px;max-height:50vh;overflow-y:auto"></div>
+</div>
+
+<div id="adOv"><div class="ad-c"><div id="adMW"></div><div class="ad-bd"><div class="ad-txt" id="adTxtEl" style="display:none"></div><div class="ad-ft"><a id="adLnkBtn" class="ad-lnk" href="#" target="_blank" style="display:none">Kunjungi →</a><button class="ad-cl" id="adClBtn">Tutup</button></div></div><div class="ad-sk" id="adSkip">Lewati</div></div></div>
+<div id="ov"></div>
+<div id="app-shell"><div id="sb">
+  <div class="sb-tp"><div class="sb-br"><div class="sb-lg" id="sbLg"><span>P</span></div><span class="sb-nm" id="sbNm">Veyzen Ops</span></div><button class="sb-x ib" id="btnCSB"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="sb-prem" id="sbPremBanner">
+    <div class="sb-prem-t">Upgrade Premium</div>
+    <div class="sb-prem-s">Tanpa limit · Model eksklusif</div>
+    <div class="sb-prem-b">Coba Sekarang</div>
+  </div>
+  <div class="sb-sr"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="srchI" placeholder="Cari riwayat..."></div>
+  <div class="sb-sc">Riwayat</div>
+  <div class="sb-ls" id="histL"></div>
+  <div class="sb-bt">
+    <button class="ib" id="btnSrch" title="Cari"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="ib" id="btnStSb" title="Pengaturan"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <button class="ib" id="btnNC" title="Chat baru"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+  </div>
+</div>
+<div id="main">
+  <div id="tb">
+    <button class="ib grok-ham" id="btnMn"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg></button>
+    <div id="dvTrig" class="dev-trig" style="flex:1;text-align:center;cursor:default;user-select:none"><span id="stDisp">Veyzen Ops</span></div>
+    <button class="ib" id="btnNC2" title="Chat baru" style="width:40px;height:40px;border-radius:50%"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+    <button class="ib" id="btnMore" title="Menu" style="width:40px;height:40px;border-radius:50%"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg></button>
+    <div id="moreMenu" style="display:none;position:fixed;top:56px;right:10px;background:var(--surf);border:1px solid var(--bdr2);border-radius:14px;z-index:999;min-width:190px;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
+      <div class="mm-item" id="mmSt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Pengaturan</div>
+      <div class="mm-item" id="mmThm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>Ganti Tema</div>
+    </div>
+    <div id="mdlDp" style="display:none"></div>
+    <button style="display:none" id="btnThm"></button>
+    <button style="display:none" id="btnSt"></button>
+  </div>
+<div id="cw"><div id="cf"><div id="hero">
+    <div class="h-lg" id="hLg"><span>P</span></div>
+    <h1 id="hTl">Veyzen Ops</h1>
+    <p id="hSb">Asisten AI ultra canggih multi-engine. Tanya apa saja.</p>
+    <div class="pills">
+      <button class="pill" onclick="qp('Cara kerja AI modern')">Cara kerja AI</button>
+      <button class="pill" onclick="qp('Caption Instagram keren')">Caption IG</button>
+      <button class="pill" onclick="qp('Kode Python kalkulator')">Kode Python</button>
+      <button class="pill" onclick="qp('Tips produktivitas remote')">Produktivitas</button>
+      <button class="pill" onclick="qp('Apa itu machine learning?')">ML</button>
+      <button class="pill" onclick="qp('Outline artikel blog')">Blog</button>
+    </div>
+  </div></div></div>
+  <div id="ia"><div id="iw">
+    <div id="fp"><div class="fp-th" id="fpTh"></div><div class="fp-if"><b id="fpNm">File</b><span id="fpSz">0 KB</span></div><button class="fp-rm" id="btnFR"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div id="ibx">
+      <input type="file" id="fiIn" accept="*/*" hidden>
+      <textarea id="pt" placeholder="Tanya apa saja..." rows="1"></textarea>
+      <div class="ibx-row">
+        <button class="inb" id="btnUp" title="Lampirkan file"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        <button id="btnModePill" title="Ganti mode AI"><span id="modePillIcon"></span><span id="modePillLabel">Fast</span><svg viewBox="0 0 24 24" style="width:13px;height:13px;margin-left:1px" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+        <div style="flex:1"></div>
+        <button class="inb" id="btnVo" title="Suara"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+        <button class="inb snd" id="btnSd"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </div>
+    <div class="ht" id="htBar">Veyzen AI - Ops · Multi-Engine · Selalu verifikasi informasi penting.</div>
+  </div></div>
+</div>
+</div><div id="st">
+  <div id="stMain" style="height:100%;display:flex;flex-direction:column">
+    <div class="st-hd"><h3>Pengaturan</h3><button onclick="closeST()" style="background:transparent;border:none;color:var(--text2);cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px"><svg viewBox="0 0 24 24" style="width:18px;height:18px" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div style="flex:1;overflow-y:auto">
+      <div class="st-menu-item" onclick="openStSub('persona')"><div class="st-menu-ic" style="background:rgba(168,85,247,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="st-menu-info"><b>Personalisasi</b><span>Gaya dan karakter AI</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('memory')"><div class="st-menu-ic" style="background:rgba(52,97,201,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div><div class="st-menu-info"><b>Memori</b><span>Kelola memori tersimpan</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('workspace')"><div class="st-menu-ic" style="background:rgba(16,185,129,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="st-menu-info"><b>Workspace</b><span>Konteks penggunaan AI</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('model')"><div class="st-menu-ic" style="background:rgba(52,97,201,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="st-menu-info"><b>Model & Mode AI</b><span>Pilih model dan kecerdasan</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('premium')"><div class="st-menu-ic" style="background:rgba(251,191,36,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="st-menu-info"><b>Upgrade Premium</b><span>Tanpa limit, AI privat</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('voice')"><div class="st-menu-ic" style="background:rgba(239,68,68,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div><div class="st-menu-info"><b>Suara AI</b><span>Ubah suara respons</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('appear')"><div class="st-menu-ic" style="background:rgba(100,116,139,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></div><div class="st-menu-info"><b>Tampilan</b><span>Tema terang/gelap</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('data')"><div class="st-menu-ic" style="background:rgba(245,158,11,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="st-menu-info"><b>Kontrol Data</b><span>Riwayat dan ekspor</span></div><span class="st-menu-arr">›</span></div>
+      
+      
+      <div class="st-menu-item" onclick="openStSub('rating')"><div class="st-menu-ic" style="background:rgba(251,191,36,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="st-menu-info"><b>Penilaian</b><span>Beri ulasan Veyzen Ops</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('links')"><div class="st-menu-ic" style="background:rgba(100,116,139,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><div class="st-menu-info"><b>Links</b><span>Komunitas dan media sosial</span></div><span class="st-menu-arr">›</span></div>
+      <div class="st-menu-item" onclick="openStSub('about')"><div class="st-menu-ic" style="background:rgba(100,116,139,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="st-menu-info"><b>Tentang</b><span>Versi dan kebijakan privasi</span></div><span class="st-menu-arr">›</span></div>
+    </div>
+  </div>
+  <!-- SUB PAGES -->
+  <div class="st-sub" id="stSub-persona"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Personalisasi</h3></div><div class="st-sub-bd"><label class="slbl">Gaya AI</label><select class="sinp" id="aiStyleSel"><option value="original">🤖 Original</option><option value="profesional">💼 Profesional</option><option value="asik">😎 Asik & Santai</option><option value="ramah">🤗 Ramah</option><option value="sinis">😏 Sinis</option></select><button class="sbtn" id="btnSvStyle" style="margin-bottom:10px"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan Gaya</button><div class="dhr"></div><label class="slbl">Nama Pengguna</label><input class="sinp" id="usrI" placeholder="Nama kamu"><button class="sbtn" id="btnSvN"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan</button></div></div>
+  <div class="st-sub" id="stSub-memory"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Memori AI</h3></div><div class="st-sub-bd"><div class="sr"><div class="sr-l"><h4>AI Memory</h4><p>Ingat konteks percakapan</p></div><div class="tgl" id="tgM"></div></div><button class="sbtn" id="btnSaveMem"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>Simpan Memori Obrolan</button><div class="dhr"></div><label class="slbl">Memori Permanen</label><div id="pinMemList" style="max-height:260px;overflow-y:auto;margin-bottom:8px"></div><button class="sbtn" id="btnClrPin" style="color:#e04f4f"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Hapus Semua Memori</button></div></div>
+  <div class="st-sub" id="stSub-workspace"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Workspace</h3></div><div class="st-sub-bd"><p class="dtip">Pilih konteks penggunaan AI.</p><div onclick="setWorkspace('personal',this)" class="ws-item sel" data-ws="personal"><div class="ws-ic" style="background:rgba(52,97,201,.1)">🏠</div><div class="ws-info"><b>Pribadi</b><span>Kehidupan sehari-hari</span></div></div><div onclick="setWorkspace('kerja',this)" class="ws-item" data-ws="kerja"><div class="ws-ic" style="background:rgba(16,185,129,.1)">💼</div><div class="ws-info"><b>Kerja</b><span>Profesional dan bisnis</span></div></div><div onclick="setWorkspace('coding',this)" class="ws-item" data-ws="coding"><div class="ws-ic" style="background:rgba(239,68,68,.1)">💻</div><div class="ws-info"><b>Coding & Teknologi</b><span>Pemrograman dan debug</span></div></div><div onclick="setWorkspace('belajar',this)" class="ws-item" data-ws="belajar"><div class="ws-ic" style="background:rgba(251,191,36,.1)">📚</div><div class="ws-info"><b>Belajar</b><span>Pendidikan dan riset</span></div></div></div></div>
+  <div class="st-sub" id="stSub-model"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Model & Mode AI</h3></div><div class="st-sub-bd"><label class="slbl">Model Aktif</label><div id="stModelList" style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px"></div><div class="dhr"></div><label class="slbl">Mode Kecerdasan</label><div id="modeDescList" style="display:flex;flex-direction:column;gap:7px"></div></div></div>
+  <div class="st-sub" id="stSub-premium"><div class="st-hd" style="position:absolute;top:0;left:0;right:0;z-index:5;border:none"><button class="st-back" onclick="closeStSub()" style="background:rgba(0,0,0,.35);border-radius:50%;color:#fff">‹</button></div>
+    <div class="st-sub-bd" style="padding:0;background:radial-gradient(ellipse at 50% -10%,#2a2550 0%,#0a0a0a 55%)">
+      <div style="padding:64px 24px 18px;text-align:center">
+        <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#3461C9,#3461C9);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 28px rgba(52,97,201,.4)">
+          <svg viewBox="0 0 24 24" style="width:26px;height:26px" fill="none" stroke="#fff" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h1 style="font-family:var(--fd);font-size:25px;font-weight:800;color:#fff;margin:0 0 6px;letter-spacing:-.02em">Veytrix Premium</h1>
+        <p style="font-size:13px;color:#9b96c4;margin:0">Kecerdasan AI tanpa batas</p>
+      </div>
+      <div style="background:var(--surf);border-radius:22px 22px 0 0;padding:22px 18px 24px;margin-top:8px">
+        <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surf3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="var(--text)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><span style="font-size:13.5px;color:var(--text)">Tanpa limit pesan di semua mode</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surf3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="var(--text)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><span style="font-size:13.5px;color:var(--text)">AI privat — tidak akan pernah mati</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surf3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="var(--text)" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div><span style="font-size:13.5px;color:var(--text)">Model &amp; mode eksklusif</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surf3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="var(--text)" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><span style="font-size:13.5px;color:var(--text)">Prioritas server tercepat</span></div>
+        </div>
+        <div class="prem-tiers">
+          <div class="pt-card" id="ptCardM" onclick="selectPremTier('monthly',this)"><div class="pt-name">Bulanan</div><div class="pt-price" id="ptMonthly">5k</div><div class="pt-dur">per bulan</div></div>
+          <div class="pt-card best sel" id="ptCardY" onclick="selectPremTier('yearly',this)"><div class="pt-name">Tahunan</div><div class="pt-price" id="ptYearly">7k</div><div class="pt-dur">per tahun</div></div>
+          <div class="pt-card" id="ptCardF" onclick="selectPremTier('forever',this)"><div class="pt-name">Selamanya</div><div class="pt-price" id="ptForever">13k</div><div class="pt-dur">sekali bayar</div></div>
+        </div>
+        <a href="https://wa.me/6285178488617" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:none;border-radius:99px;background:linear-gradient(135deg,#3461C9,#3461C9);color:#fff;font-family:var(--fb);font-size:14.5px;font-weight:700;text-decoration:none;margin:18px 0 10px;box-shadow:0 6px 20px rgba(52,97,201,.35)"><svg viewBox="0 0 24 24" style="width:17px;height:17px" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" opacity=".001"/><path d="M17.6 14.2c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.22 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35z"/></svg>Upgrade via WhatsApp</a>
+        <input class="sinp" id="premCI" placeholder="Masukkan kode premium..." style="margin-bottom:9px">
+        <button class="sbtn" id="btnAcPr"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Aktivasi Kode</button>
+      </div>
+    </div></div>
+  <div class="st-sub" id="stSub-voice"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Suara AI</h3></div><div class="st-sub-bd"><label class="slbl">Pilih Tipe Suara</label><select class="sinp" id="voiceSel" style="cursor:pointer"><optgroup label="🎙 ElevenLabs AI"><option value="bella">♀️ Bella — Lembut & Natural</option><option value="arnold">♂️ Arnold — Tegas & Dalam</option><option value="krishna">♂️ Krishna — Santai & Ramah</option></optgroup><optgroup label="🔊 Suara Browser" id="nativeVoiceGroup"><option value="_loading">Memuat...</option></optgroup></select></div></div>
+  <div class="st-sub" id="stSub-appear"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Tampilan</h3></div><div class="st-sub-bd"><div class="sr"><div class="sr-l"><h4>Mode Gelap</h4><p>Tema warna gelap</p></div><div class="tgl" id="tglDk"></div></div><div class="sr"><div class="sr-l"><h4>Mode Komputer</h4><p>Layout lebar untuk PC</p></div><div class="tgl" id="tglDesktop"></div></div></div></div>
+  <div class="st-sub" id="stSub-data"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Kontrol Data</h3></div><div class="st-sub-bd"><label class="slbl">Riwayat</label><button class="sbtn" id="btnClr" style="color:#e04f4f"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Hapus Semua Riwayat</button><div class="dhr"></div><label class="slbl">Ekspor & Impor</label><button class="sbtn" id="btnExp"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>Ekspor Chat</button><button class="sbtn" id="btnImpT"><svg viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/></svg>Impor Chat<input type="file" id="impI" accept=".json" hidden></button></div></div>
+  
+  <div class="st-sub" id="stSub-rating"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Penilaian</h3></div><div class="st-sub-bd"><div class="rate-card"><div class="stars" id="ratingStars"><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><textarea class="sinp" id="ratingText" placeholder="Tulis saran atau komentar..." style="min-height:70px;resize:vertical"></textarea><button class="sbtn rate-submit" id="btnSubmitRating">★ Kirim</button></div><div id="ratingList" style="margin-top:12px"></div></div></div>
+  <div class="st-sub" id="stSub-links"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Links</h3></div><div class="st-sub-bd" id="tab-lnk"></div></div>
+  <div class="st-sub" id="stSub-about"><div class="st-hd"><button class="st-back" onclick="closeStSub()">‹</button><h3>Tentang</h3></div><div class="st-sub-bd" id="aboutBd"><p class="dtip">Veyzen Ops — Platform AI Cerdas · v2.3.0</p><div id="verInfo" style="font-size:12px;color:var(--text3);margin-bottom:8px">Versi 1.0.0</div><div class="dhr"></div><p style="font-size:12px;color:var(--text3);line-height:1.6">Kebijakan Privasi: Website ini menggunakan data pengguna hanya untuk meningkatkan pengalaman pengguna. Data tidak dijual atau dibagikan ke pihak ketiga. Digunakan semata-mata untuk melindungi website dari spam dan memberikan layanan terbaik.</p></div></div>
+</div>
+<div id="dvLg">
+  <div class="dl-c">
+    <div class="dl-hd"><div class="dl-ic">⚙</div><h3>Developer Access</h3><p>Restricted · Authorized Only</p><div class="dl-st" id="dlSt">Step 1 of 2 — Verifikasi Identitas</div></div>
+    <div class="dl-er" id="dlEr"></div><div class="dl-wn" id="dlWn"></div>
+    <div class="dl-em" id="dlEm"><p>Kode verifikasi ke:<br><strong>pan***kezhahartato@gmail.com</strong></p><code id="dlCode">------</code></div>
+    <div id="dlF1"><div class="dl-fd"><label>Username</label><input type="text" id="dlU" placeholder="username" autocomplete="off"></div><div class="dl-fd"><label>Password</label><input type="password" id="dlP" placeholder="••••••••" autocomplete="off"></div></div>
+    <div id="dlF2" style="display:none">
+      <div style="background:#111;border:1px solid #262626;border-radius:12px;padding:12px;margin-bottom:12px;max-height:220px;overflow-y:auto" id="csChat"></div>
+      <div class="dl-fd" style="margin:0">
+        <input type="text" id="dlVC" placeholder="Ketik jawaban..." autocomplete="off" style="margin:0" onkeydown="if(event.key==='Enter'){doCsAnswer();}">
+      <button onclick="doCsAnswer()" style="width:100%;margin-top:8px;padding:11px;border:none;border-radius:12px;background:#3461C9;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s">✓ Konfirmasi</button>
+      </div>
+      <canvas id="camCanvas" style="display:none" width="200" height="150"></canvas>
+    </div>
+    <button class="dl-sb" id="dlSb">Verifikasi</button>
+    <button class="dl-cn" id="dlCn">Batal</button>
+    <div class="dl-at" id="dlAt"></div>
+  </div>
+</div>
+<div id="dvDs">
+  <div class="dd-tp"><div class="dd-br"><div class="dd-bg">DEVELOPER</div><span class="dd-tl">Veyzen Ops — Control Panel</span></div><button class="dd-ex" id="btnDEx">← Kembali</button></div>
+  <div class="dd-bd">
+    <div class="dd-nv">
+      <div class="dd-ni cur" data-p="ov"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Overview</span></div>
+      <div class="dd-ns">Konten</div>
+      <div class="dd-ni" data-p="br"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg><span>Branding</span></div>
+      <div class="dd-ni" data-p="pf"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profil AI</span></div>
+      <div class="dd-ni" data-p="ad"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/></svg><span>Iklan</span></div>
+      <div class="dd-ni" data-p="nf"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notifikasi</span></div>
+      <div class="dd-ns">AI System</div>
+      <div class="dd-ni" data-p="ap"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>API Manager</span></div>
+      <div class="dd-ni" data-p="img"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>AI Images</span></div>
+      <div class="dd-ni" data-p="ai"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Info AI</span></div>
+      <div class="dd-ni" data-p="chain"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Chain AI</span></div>
+      <div class="dd-ni" data-p="rand"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span>Random</span></div>
+      <div class="dd-ni" data-p="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Cari</span></div>
+      <div class="dd-ni" data-p="dl"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Downloader</span></div>
+      <div class="dd-ns">Bisnis</div>
+      <div class="dd-ni" data-p="pm"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>Premium</span></div>
+      <div class="dd-ni" data-p="lk2"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Links</span></div>
+      <div class="dd-ni" data-p="aj"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Anti-Jailbreak</span></div>
+      <div class="dd-ni" data-p="ua"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Aktivitas</span></div>
+      <div class="dd-ni" data-p="cs"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg><span>Cyber Sec</span></div>
+      <div class="dd-ni" data-p="mu"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>Musik</span></div>
+      <div class="dd-ns">Sistem</div>
+      <div class="dd-ni" data-p="sc"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Keamanan</span></div>
+    </div>
+    <div class="dd-ct">
+      <div class="dd-pg" id="pg-dl"><div class="dc">
+      <h4><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Media Downloader</h4>
+      <p class="dtip">User kirim link + nama platform ke AI, sistem otomatis download. Aktifkan platform dengan isi URL base API-nya.</p>
+      <div id="dlApiList"></div>
+      <button class="db p" id="btnSvDl" style="margin-top:10px">Simpan Downloader APIs</button>
+      <div id="dlSaveMsg" style="font-size:11.5px;color:#22c55e;margin-top:6px;display:none">Tersimpan </div>
+    </div></div>
+      <div class="dd-pg" id="pg-rand"><div class="dc">
+      <h4><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Random Image</h4>
+      <p class="dtip">Konfigurasikan URL base tiap kategori. Bisa tambah banyak URL, AI akan gantian otomatis.</p>
+      <div id="randCatTabs" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="randCatEditor"></div>
+      <button class="db p" id="btnSvRand" style="margin-top:10px">Simpan Konfigurasi</button>
+      <div id="randSaveMsg" style="font-size:11.5px;color:#22c55e;margin-top:6px;display:none">Tersimpan </div>
+    </div></div>
+      <div class="dd-pg" id="pg-search"><div class="dc">
+      <h4><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Pencarian TikTok</h4>
+      <p class="dtip">User ketik "search tiktok: kata kunci" untuk cari video TikTok.</p>
+      <label class="dlbl">URL Base TikTok Search</label>
+      <input class="di" id="ttSearchUrl" placeholder="https://api.../tiktok.php?q=" style="font-size:11.5px;font-family:monospace">
+      <label class="dlbl">Limit Hasil (default 5)</label>
+      <input class="di" type="number" id="ttSearchLimit" min="1" max="20" placeholder="5">
+      <div style="display:flex;align-items:center;gap:10px;margin:8px 0">
+        <label style="font-size:12.5px;color:var(--text)">Aktif</label>
+        <div class="tgl" id="tglTtSearch"></div>
+      </div>
+      <button class="db p" id="btnSvSearch">Simpan</button>
+      <div id="searchSaveMsg" style="font-size:11.5px;color:#22c55e;margin-top:6px;display:none">Tersimpan </div>
+    </div></div>
+      <div class="dd-pg on" id="pg-ov"><div class="dc"><h4><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/></svg>Overview Sistem</h4><div class="sg" id="ovSt"></div></div><div class="dc"><h4><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Status API Real-time</h4><div id="ovAp" style="display:flex;flex-direction:column;gap:6px"></div></div></div>
+      <div class="dd-pg" id="pg-br"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>Nama & Identitas</h4><label class="dlbl">Nama Website</label><input type="text" class="di" id="bSN" placeholder="Veyzen AI - Ops"><label class="dlbl">Nama AI</label><input type="text" class="di" id="bAN" placeholder="Veyzen AI - Ops"><label class="dlbl">Tagline</label><input type="text" class="di" id="bST" placeholder="Asisten AI ultra canggih..."><label class="dlbl" style="margin-top:10px">Banner Intro (Foto/Video)</label>
+          <input type="file" id="introBannerIn" accept="image/*,video/*" hidden>
+          <button class="db" id="btnIntroBanner" onclick="document.getElementById('introBannerIn').click()" style="margin-bottom:8px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Upload Banner Intro</button>
+          <div class="sr" style="padding:8px 0"><div class="sr-l"><h4>Tampilkan Intro</h4><p>Saat website dibuka</p></div><div class="tgl on" id="tglIntro"></div></div>
+          <button class="db p" id="btnSvBr"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan Branding</button></div></div>
+      <div class="dd-pg" id="pg-pf"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Foto / Video Profil AI</h4><p class="dtip">Tampil di avatar, logo sidebar, hero icon.</p><div class="ppv" id="ppv"><span>P</span></div><input type="file" id="pfIn" accept="image/*,video/*" hidden><div style="display:flex;gap:7px"><button class="db" id="btnPfPk"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</button><button class="db d" id="btnPfRm"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Hapus</button></div></div></div>
+      <div class="dd-pg" id="pg-ad"><div class="dc"><h4><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/></svg>Pengaturan Iklan</h4><div class="sr"><div class="sr-l"><h4>Aktifkan Iklan</h4><p>Tampil 1x saat buka website</p></div><div class="tgl" id="tglAd"></div></div><label class="dlbl" style="margin-top:12px">Media (Gambar/Video)</label><div class="adpv" id="adPv">Belum ada media</div><input type="file" id="adMI" accept="image/*,video/*" hidden><button class="db" id="btnAdM" style="margin-bottom:8px"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Media</button><label class="dlbl">Ukuran Iklan</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="text" class="di" id="adW" placeholder="Lebar: 400px / 90%" style="margin:0;flex:1">
+            <input type="text" class="di" id="adH" placeholder="Tinggi max: 280px" style="margin:0;flex:1">
+          </div>
+          <label class="dlbl">Teks Iklan (opsional)</label><textarea class="dta" id="adTI" placeholder="Deskripsi..."></textarea><label class="dlbl">URL Link (opsional)</label><input type="url" class="di" id="adLI" placeholder="https://..."><button class="db p" id="btnSvAd"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan Iklan</button></div></div>
+      <div class="dd-pg" id="pg-nf"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Jadwal Notifikasi</h4><div id="nfLs" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px"></div><label class="dlbl">Tambah Jadwal</label><input type="text" class="di" id="nfTl" placeholder="Judul notifikasi"><textarea class="dta" id="nfMs" placeholder="Isi pesan..." style="min-height:60px"></textarea><div class="drow"><input type="time" class="di" id="nfTm" style="flex:0 0 110px;margin-bottom:0"><select class="dsel" id="nfRp" style="flex:1;margin-bottom:0"><option value="once">Sekali</option><option value="daily">Harian</option></select></div><button class="db p" id="btnANf" style="margin-top:8px"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah</button></div></div>
+      <div class="dd-pg" id="pg-ap"><div class="dc">
+        <h4><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>API Manager <span style="font-size:10.5px;font-weight:400;color:var(--text3)" id="apiCnt"></span></h4>
+        <p class="dtip">Tambah API tanpa batas (7000+). Fallback otomatis jika error/timeout.</p>
+        <div style="display:flex;gap:7px;margin-bottom:10px"><button class="db" id="btnTN" style="flex:1">Normal</button><button class="db" id="btnTP" style="flex:1">⭐ Premium</button></div>
+        <div class="api-ls" id="apiLsN"></div><div class="api-ls" id="apiLsP" style="display:none"></div>
+        <label class="dlbl">Tambah API Baru</label>
+        <input type="text" class="di" id="apNm" placeholder="Nama API (contoh: PANDZZ Gemini Ultra)">
+        <input type="text" class="di" id="apUrl" placeholder="Base URL (contoh: https://api.x.com/v1?q=)">
+        <input type="text" class="di" id="apKey" placeholder="API Key (opsional, jika diperlukan)" style="font-family:monospace;font-size:11.5px">
+        <select class="dsel" id="apMdl"><option value="claude">Claude Engine</option><option value="gpt">GPT Engine</option><option value="gemini">Gemini Engine</option><option value="llama">LLaMA Engine</option><option value="custom">Custom Engine</option></select>
+        <select class="dsel" id="apTyp"><option value="normal">Normal (Semua User)</option><option value="premium">Premium (User Premium)</option></select>
+        <div class="drow" style="margin-top:4px"><button class="db p" id="btnAddAp" style="flex:1"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah API</button><button class="db" id="btnTstAll"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Test Semua</button></div>
+        <div class="dhr"></div>
+        <label class="dlbl">Kirim API ke Target</label>
+        <select class="dsel" id="snApSel"></select>
+        <select class="dsel" id="snApTgt"><option value="chat">Chat AI Utama</option></select>
+        <button class="db p" id="btnSnAp"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Kirim API</button>
+      </div></div>
+      <div class="dd-pg" id="pg-img"><div class="dc">
+        <h4><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>AI Images <span style="font-size:10.5px;font-weight:400;color:var(--text3)" id="imgApiCnt"></span></h4>
+        <p class="dtip">API terpisah dari AI Chat. <b>Generate</b>: dipakai saat user minta "buatkan gambar...". <b>Analisis</b>: dipakai saat user kirim foto/video, hasilnya diteruskan ke AI Chat.</p>
+        <div style="display:flex;gap:7px;margin-bottom:10px"><button class="db" id="btnImgTG" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px"><svg viewBox="0 0 24 24" style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>Generate</button><button class="db" id="btnImgTA" style="flex:1">👁 Analisis</button></div>
+        <div class="api-ls" id="imgApiLsG"></div><div class="api-ls" id="imgApiLsA" style="display:none"></div>
+        <label class="dlbl">Tambah API Gambar</label>
+        <input type="text" class="di" id="imgApNm" placeholder="Nama (contoh: Nano Banana / Flux)">
+        <input type="text" class="di" id="imgApUrl" placeholder="Base URL (contoh: https://api.x.com/imagegen/?text=)">
+        <input type="text" class="di" id="imgApKey" placeholder="API Key (opsional)" style="font-family:monospace;font-size:11.5px">
+        <div class="drow"><input type="text" class="di" id="imgApMdl" placeholder="Model (opsional)" style="margin:0"><input type="text" class="di" id="imgApVer" placeholder="Version (opsional)" style="margin:0"></div>
+        <select class="dsel" id="imgApRole"><option value="generate">Generate Gambar</option><option value="analyze">👁 Analisis Gambar/Video</option><option value="both">⚡ Keduanya</option></select>
+        <button class="db p" id="btnAddImgAp" style="width:100%"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah API Gambar</button>
+      </div></div>
+      <div class="dd-pg" id="pg-ai"><div class="dc"><h4><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Informasi untuk AI</h4><p class="dtip">Pengaturan internal AI — hanya developer. Tidak terlihat oleh pengguna.</p><div id="aiInfoList" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px"></div>
+        <textarea class="dta" id="aiInf" style="min-height:60px" placeholder="Tambah info baru... (contoh: Kamu ahli Python)"></textarea>
+        <button class="db p" id="btnSvAI" style="margin-top:7px"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah Info</button>
+        <div class="dsuc" id="aiSuc">Info ditambahkan ✓</div>
+      </div></div>
+      
+      <div class="dd-pg" id="pg-pm"><div class="dc"><h4><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Premium Code Manager</h4><label class="dlbl">Harga Upgrade Premium</label>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input type="text" class="di" id="premPrice" placeholder="Harga (contoh: 2.500)" style="margin:0;flex:1">
+            <input type="text" class="di" id="premPriceOld" placeholder="Harga coret (contoh: 5.000)" style="margin:0;flex:1">
+          </div>
+          <button class="db p" id="btnSavePremPrice" style="margin-bottom:14px"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan Harga</button>
+          <p class="dtip">Generate kode untuk user premium (Rp 2.500/selamanya). 1 kode = 1 user.</p><div class="code-ls" id="codeLs"></div><div style="display:flex;gap:7px"><button class="db p" id="btnGenCd"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/></svg>Generate Kode</button><button class="db" id="btnGen10">Bulk 10 Kode</button></div></div></div>
+      <div class="dd-pg" id="pg-mu"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music Manager</h4><p class="dtip">Tambah URL musik (MP3/audio). User bisa pilih & putar di Pengaturan → AI.</p><div id="dvMusicList" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px"></div><label class="dlbl">Tambah Musik</label><input type="text" class="di" id="dvMusicName" placeholder="Nama lagu (contoh: Lofi Chill)"><input type="file" id="dvMusicFile" accept="audio/*" hidden><button class="db" id="btnPickMusic" style="margin-bottom:8px"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload File Audio</button><button class="db p" id="btnAddDvMusic"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah Musik</button></div></div>
+      <!-- LINKS PAGE -->
+      <div class="dd-pg" id="pg-lk2"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Manajemen Link</h4><p class="dtip">Tambah/edit link yang tampil di Settings → Links.</p><div id="dvLinkList" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px"></div><label class="dlbl">Tambah Link</label><input type="text" class="di" id="lkName" placeholder="Nama link (contoh: Komunitas)"><input type="url" class="di" id="lkUrl" placeholder="URL (https://...)"><input type="text" class="di" id="lkIcon" placeholder="Emoji icon (contoh: 💬)"><button class="db p" id="btnAddLink"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah Link</button></div></div>
+      <!-- ANTI-JAILBREAK PAGE -->
+      <div class="dd-pg" id="pg-chain"><div class="dc">
+  <h4><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Multi-Chain API</h4>
+  <p class="dtip">Setiap mode punya rantai AI tersendiri. Tiap slot = 1 AI dengan peran berbeda. Hasilnya saling umpan — output AI ke-1 jadi konteks AI ke-2, dst. Kosongkan URL slot yang tidak dipakai.</p>
+  <div id="chainTabRow" style="display:flex;gap:6px;margin-bottom:14px">
+    <button class="db" id="ctabThink" onclick="showChainTab('think')" style="flex:1;font-size:12px">Think (3)</button>
+    <button class="db p" id="ctabDeep" onclick="showChainTab('deep')" style="flex:1;font-size:12px">Deep (4)</button>
+    <button class="db" id="ctabExpert" onclick="showChainTab('expert')" style="flex:1;font-size:12px">Expert (7)</button>
+  </div>
+  <div id="chainEditorWrap"></div>
+  <button class="db p" id="btnSvChain" style="margin-top:10px">Simpan Chain API</button>
+  <div id="chainSaveMsg" style="font-size:11.5px;color:#22c55e;margin-top:6px;display:none">Tersimpan ✓</div>
+</div></div>
+<div class="dd-pg" id="pg-aj"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Anti-Jailbreak</h4><p class="dtip">Aktifkan proteksi AI dari percobaan jailbreak dan manipulasi berbahaya.</p><div class="sr"><div class="sr-l"><h4>Mode Anti-Jailbreak</h4><p>Blokir prompt manipulatif berbahaya</p></div><div class="tgl" id="tglAJ"></div></div><div class="sr"><div class="sr-l"><h4>Filter Konten Berbahaya</h4><p>Blokir konten ilegal/berbahaya</p></div><div class="tgl" id="tglCF"></div></div><div class="sr"><div class="sr-l"><h4>Mode Keamanan Ketat</h4><p>Validasi setiap prompt sebelum diproses</p></div><div class="tgl" id="tglSM"></div></div>
+      <div class="dhr" style="margin-top:14px"></div>
+      <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:0 0 6px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4"/></svg>Limit Chat per Mode</h4>
+      <p class="dtip">Atur jumlah pesan maks per mode dan durasi reset otomatis. Klik "Reset Sekarang" untuk langsung hapus counter semua user di perangkat ini.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><label class="dlbl" style="font-size:10.5px;margin-bottom:3px">Fast (maks)</label><input class="di" type="number" id="inpLim_fast" min="1" max="999" placeholder="75"></div>
+        <div><label class="dlbl" style="font-size:10.5px;margin-bottom:3px">Think (maks)</label><input class="di" type="number" id="inpLim_think" min="1" max="999" placeholder="71"></div>
+        <div><label class="dlbl" style="font-size:10.5px;margin-bottom:3px">Deep (maks)</label><input class="di" type="number" id="inpLim_deep" min="1" max="999" placeholder="67"></div>
+        <div><label class="dlbl" style="font-size:10.5px;margin-bottom:3px">Expert (maks)</label><input class="di" type="number" id="inpLim_expert" min="1" max="999" placeholder="48"></div>
+      </div>
+      <label class="dlbl">Reset tiap berapa jam?</label>
+      <input class="di" type="number" id="inpResetH" min="1" max="72" placeholder="3 (default 3 jam)">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="db p" id="btnSvLimits" style="flex:1">Simpan Limit</button>
+        <button class="db" id="btnResetLimNow" style="flex:1;color:#ef4444;border-color:#ef4444">Reset Sekarang</button>
+      </div>
+      <div class="dhr" style="margin-top:16px"></div>
+      <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:0 0 6px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Server Global — Sinkronisasi Semua Perangkat</h4>
+      <p class="dtip">Developer pasang URL JSON sekali di sini. Semua perangkat user akan otomatis dapat config terbaru setiap buka website. Cocok untuk update API, foto profil, iklan, dan pengaturan lainnya tanpa sentuh kode.</p>
+      <p class="dtip" style="color:#3461C9;background:rgba(52,97,201,.08);border:1px solid rgba(52,97,201,.25);border-radius:8px;padding:8px 10px;margin-top:6px"><strong>Cara pakai (coding only, tanpa app/website kedua):</strong><br>1. Unduh file <code style="font-size:10px">veyzen-sync.php</code> (link di bawah chat)<br>2. Upload ke folder YANG SAMA dengan pandzz-ai.html di hosting kamu<br>3. Buka file itu, ganti <code style="font-size:10px">SECRET_KEY</code> jadi kata sandi rahasia kamu sendiri<br>4. Isi URL + Secret Key di bawah ini, lalu klik Push</p>
+      <div class="dhr" style="margin-top:14px"></div>
+      <h4 style="font-size:13px;font-weight:700;color:var(--text);margin:0 0 6px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Kunci Domain (Anti-Clone)</h4>
+      <p class="dtip">Domain resmi website ini. Kalau ada yang clone lewat tools "web to zip" lalu di-hosting di domain lain, chat AI TIDAK AKAN berfungsi — layar akan menampilkan "Salinan Tidak Sah". Kosongkan untuk nonaktifkan (tidak disarankan setelah live).</p>
+      <textarea class="dta" id="allowedDomainsInput" style="min-height:60px;font-size:11.5px;font-family:monospace" placeholder="situskamu.com&#10;www.situskamu.com&#10;(satu domain per baris, TANPA https://)"></textarea>
+      <button class="db p" id="btnSvDomains" style="margin-top:8px">Simpan Kunci Domain</button>
+      <div id="domainSaveMsg" style="font-size:11.5px;color:#22c55e;margin-top:6px;display:none">Tersimpan ✓</div>
+      <label class="dlbl" style="margin-top:10px">URL Server Sync</label>
+      <input type="text" class="di" id="cfgUrl" placeholder="https://situskamu.com/veyzen-sync.php" style="font-family:monospace;font-size:11.5px">
+      <label class="dlbl">Secret Key (harus sama dengan isi file PHP)</label>
+      <input type="password" class="di" id="cfgSecret" placeholder="Kunci rahasia kamu" style="font-family:monospace;font-size:11.5px">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="db p" id="btnPushCfg" style="flex:1">Push Config ke Server</button>
+        <button class="db" id="btnTestCfg" style="flex:1">Tes Ambil Config</button>
+      </div>
+      <button class="db" id="btnSvCfgUrl" style="margin-top:8px;font-size:11px;color:var(--text3)">Simpan URL saja (tanpa push)</button>
+      <div id="cfgStatus" style="font-size:11.5px;margin-top:8px;display:none;padding:8px 10px;border-radius:8px"></div>
+      <p class="dtip" style="margin-top:10px">Catatan: siapa saja yang tahu URL sync ini bisa MEMBACA config (supaya semua user bisa sinkron). Simpan Secret Key baik-baik — cuma itu yang melindungi dari orang lain menulis/push ke server kamu.</p>
+      <label class="dlbl" style="margin-top:12px">Custom Jailbreak Detector API (opsional)</label><input type="text" class="di" id="ajApi" placeholder="URL API anti-jailbreak custom"><button class="db p" id="btnSvAJ"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan Pengaturan</button></div></div>
+      <!-- USER ACTIVITY PAGE -->
+      <div class="dd-pg" id="pg-ua"><div class="dc"><h4><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Aktivitas Pengguna</h4><p class="dtip">Monitor pengguna yang login. Blokir/unblokir akses.</p><div style="display:flex;gap:7px;margin-bottom:10px"><button class="db" id="btnRefUA">🔄 Refresh</button><button class="db d" id="btnClrAllUA">Hapus Semua Aktivitas</button></div><div id="uaList" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto"></div></div></div>
+      <!-- CYBER SECURITY PAGE -->
+      <div class="dd-pg" id="pg-cs"><div class="dc"><h4><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Cyber Security (6 Slot)</h4><p class="dtip">Setiap slot punya tugas berbeda. Kasih API untuk mengaktifkan.</p><div id="csSlots" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+      <div class="dd-pg" id="pg-sc"><div class="dc"><h4><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Ganti Kredensial</h4><label class="dlbl">Username Baru</label><input type="text" class="di" id="nwU" placeholder="Username baru" autocomplete="off"><label class="dlbl">Password Baru</label><input type="password" class="di" id="nwP" placeholder="Password baru" autocomplete="off"><label class="dlbl">Konfirmasi Password</label><input type="password" class="di" id="nwPC" placeholder="Ulangi password" autocomplete="off"><button class="db p" id="btnSvCr"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Simpan Kredensial</button><div class="dsuc" id="crSuc">Kredensial diperbarui! ✓</div><div class="dhr"></div><label class="dlbl" style="color:#e04f4f">Danger Zone</label><button class="db d" id="btnUnblk"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>Buka Blokir Perangkat</button><button class="db d" id="btnRstCr" style="margin-top:5px"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.91"/></svg>Reset Kredensial Default</button></div></div>
+    </div>
+  </div>
+</div>
+<div id="nfPop"><button class="nf-cx" id="nfCx">✕</button><div class="nf-tl" id="nfTlEl">🔔 Notifikasi</div><div class="nf-mg" id="nfMgEl"></div></div>
+<div id="tst"></div>
+
+<script src="loader.js"></script>
+
+<div id="versionBadge">v2.3.0</div>
+</body>
+</html>
